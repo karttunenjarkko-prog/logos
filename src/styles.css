@@ -421,6 +421,7 @@ h3 {
 
 .mode-card,
 .skill-card,
+.thought-item,
 .session-item,
 .session-detail,
 .output-panel {
@@ -515,6 +516,48 @@ h3 {
 .session-list {
   display: grid;
   gap: 1rem;
+}
+
+.capture-panel,
+.captured-list {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 1rem;
+}
+
+.capture-panel textarea {
+  min-height: 180px;
+}
+
+.thought-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.thought-item {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+}
+
+.thought-item p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.source-pill {
+  width: fit-content;
+  border-radius: 999px;
+  background: #f0eee6;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 0.28rem 0.48rem;
 }
 
 .session-list.compact {
@@ -746,7 +789,7 @@ fieldset {
   .topbar nav {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
   }
 
   .topbar nav button {

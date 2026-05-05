@@ -15,6 +15,7 @@ The immediate goal is to transform the SPARRI mode from a "polite analyzer" into
 - **Agent Governance:** Added `AGENTS.md` and `CLAUDE.md` so AI agents know to read this file first, preserve the Logos philosophy, verify changes, and push successful updates to GitHub.
 - **SPARRI v1:** Implemented a SPARRI-specific Challenge Engine with strict assumption/challenge output and separate rendering.
 - **Manifesto & Audit Harness:** Added `README.md`, a SPARRI golden set, and a lightweight validation script for SPARRI output structure and anti-advice rules.
+- **Capture v1:** Added raw thought capture with text/voice source metadata, localStorage persistence, newest-first list, and a "Sparraa tästä" handoff into SPARRI chat without AI processing during capture.
 
 ## 🛠 In Progress (The "Next Move")
 - [x] **Implement SPARRI_CHALLENGE_SCHEMA:** Refactor `logosEngine.js` to use a strict schema that forces the detection of one assumption and one sharp question[cite: 2].

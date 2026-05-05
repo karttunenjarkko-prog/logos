@@ -1,15 +1,26 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import CaptureView from './components/CaptureView.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import MemoryView from './components/MemoryView.jsx';
 import SettingsView from './components/SettingsView.jsx';
 import SessionEditor from './components/SessionEditor.jsx';
 import SkillLibrary from './components/SkillLibrary.jsx';
 import { EMPTY_SESSION } from './constants.js';
-import { createSessionDraft, loadSessions, loadSettings, saveSessions, saveSettings } from './data/storage.js';
+import {
+  createSessionDraft,
+  createThoughtDraft,
+  loadSessions,
+  loadSettings,
+  loadThoughts,
+  saveSessions,
+  saveSettings,
+  saveThoughts,
+} from './data/storage.js';
 import { logosChatTurn, logosEngine, prepareLogosSession } from './services/logosEngine.js';
 
 const VIEWS = {
   dashboard: 'dashboard',
+  capture: 'capture',
   editor: 'editor',
   skills: 'skills',
   memory: 'memory',
@@ -19,6 +30,7 @@ const VIEWS = {
 export default function App() {
   const [view, setView] = useState(VIEWS.dashboard);
   const [sessions, setSessions] = useState(() => loadSessions());
+  const [thoughts, setThoughts] = useState(() => loadThoughts());
   const [settings, setSettings] = useState(() => loadSettings());
   const [form, setForm] = useState(EMPTY_SESSION);
   const [isThinking, setIsThinking] = useState(false);
@@ -36,9 +48,17 @@ export default function App() {
     saveSettings(settings);
   }, [settings]);
 
+  useEffect(() => {
+    saveThoughts(thoughts);
+  }, [thoughts]);
+
   const sortedSessions = useMemo(
     () => [...sessions].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
     [sessions],
+  );
+  const sortedThoughts = useMemo(
+    () => [...thoughts].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)),
+    [thoughts],
   );
 
   function startSession(mode) {
@@ -62,21 +82,32 @@ export default function App() {
     setView(VIEWS.editor);
   }
 
-  async function sendChatTurn(input, quickIntent = null) {
+  async function sendChatTurn(input, options = {}) {
     const cleanInput = input.trim();
     if (!cleanInput || isThinking) return;
+
+    const quickIntent = typeof options === 'string' ? options : options.quickIntent ?? null;
+    const resetThread = typeof options === 'object' && options.resetThread;
+    const forcedIntake = typeof options === 'object' ? options.forcedIntake : null;
+    const baseMessages = resetThread ? [] : chatMessages;
+    const activeChatSession = resetThread ? null : chatSession;
 
     setIsThinking(true);
     setChatError('');
     setChatInput('');
+    if (resetThread) {
+      setChatMessages([]);
+      setChatSession(null);
+    }
 
     try {
       const userMessage = createUserMessage(cleanInput);
-      const nextTranscript = [...chatMessages, userMessage];
+      const nextTranscript = [...baseMessages, userMessage];
       setChatMessages(nextTranscript);
 
       const intake =
-        chatSession ??
+        forcedIntake ??
+        activeChatSession ??
         (await prepareLogosSession(cleanInput, {
           apiKey: settings.openAiApiKey,
           pastSessions: sortedSessions,
@@ -95,10 +126,10 @@ export default function App() {
       const finalTranscript = [...nextTranscript, assistantMessage];
       const output = chatOutputToSessionOutput(response);
 
-      if (chatSession?.id) {
+      if (activeChatSession?.id && !forcedIntake) {
         setSessions((current) =>
           current.map((session) =>
-            session.id === chatSession.id
+            session.id === activeChatSession.id
               ? {
                   ...session,
                   output,
@@ -132,7 +163,7 @@ export default function App() {
       }
       setView(VIEWS.dashboard);
     } catch (error) {
-      setChatMessages(chatMessages);
+      setChatMessages(baseMessages);
       setChatInput(cleanInput);
       setChatError(error.message || 'Logos Brain ei saanut vastausta.');
     } finally {
@@ -147,7 +178,23 @@ export default function App() {
       action: 'Muuta tämä käytäntöön.',
     };
 
-    sendChatTurn(prompts[action] ?? 'Jatketaan tästä.', action);
+    sendChatTurn(prompts[action] ?? 'Jatketaan tästä.', { quickIntent: action });
+  }
+
+  function saveRawThought(text, source) {
+    const thought = createThoughtDraft(text, source);
+    setThoughts((current) => [thought, ...current]);
+  }
+
+  function sparRawThought(thought) {
+    sendChatTurn(thought.text, {
+      resetThread: true,
+      forcedIntake: {
+        mode: 'sparri',
+        title: createThoughtTitle(thought.text),
+        tags: ['capture', thought.source],
+      },
+    });
   }
 
   async function saveCurrentSession() {
@@ -182,6 +229,9 @@ export default function App() {
           <button type="button" className={view === VIEWS.dashboard ? 'active' : ''} onClick={() => setView(VIEWS.dashboard)}>
             Työpöytä
           </button>
+          <button type="button" className={view === VIEWS.capture ? 'active' : ''} onClick={() => setView(VIEWS.capture)}>
+            Kaappaa
+          </button>
           <button type="button" className={view === VIEWS.skills ? 'active' : ''} onClick={() => setView(VIEWS.skills)}>
             Taidot
           </button>
@@ -209,6 +259,9 @@ export default function App() {
             onOpenMemory={() => setView(VIEWS.memory)}
             onOpenSkills={() => setView(VIEWS.skills)}
           />
+        )}
+        {view === VIEWS.capture && (
+          <CaptureView thoughts={sortedThoughts} onSaveThought={saveRawThought} onSparThought={sparRawThought} />
         )}
         {view === VIEWS.editor && (
           <SessionEditor
@@ -284,4 +337,10 @@ function chatOutputToSessionOutput(response) {
     challenge_question: response.question,
     next_action: response.structured?.action || 'Vastaa Logoksen kysymykseen ja jatka siitä.',
   };
+}
+
+function createThoughtTitle(text) {
+  const normalized = text.trim().replace(/\s+/g, ' ');
+  const words = normalized.split(' ').slice(0, 5).join(' ');
+  return words || 'Raaka ajatus';
 }

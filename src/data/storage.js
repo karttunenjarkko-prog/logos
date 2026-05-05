@@ -1,5 +1,6 @@
 const STORAGE_KEY = 'logos.sessions.v1';
 const SETTINGS_KEY = 'logos.settings.v1';
+const THOUGHTS_KEY = 'logos.thoughts.v1';
 
 export function loadSessions() {
   try {
@@ -25,6 +26,28 @@ export function loadSettings() {
 
 export function saveSettings(settings) {
   window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+export function loadThoughts() {
+  try {
+    const raw = window.localStorage.getItem(THOUGHTS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveThoughts(thoughts) {
+  window.localStorage.setItem(THOUGHTS_KEY, JSON.stringify(thoughts));
+}
+
+export function createThoughtDraft(text, source = 'text') {
+  return {
+    id: crypto.randomUUID(),
+    text: text.trim(),
+    timestamp: new Date().toISOString(),
+    source,
+  };
 }
 
 export function createSessionDraft(form, output) {

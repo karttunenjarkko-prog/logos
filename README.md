@@ -36,10 +36,13 @@ See [LOGOS_STATUS.md](./LOGOS_STATUS.md) for the current master context.
 
 ## Modes
 
+- **CAPTURE:** save raw thoughts quickly without AI processing
 - **IDEA:** clarify and develop an emerging idea
 - **SPARRI:** challenge one assumption or logical jump
 - **ANALYYSI:** unpack an experience into observations, interpretations, and learning
 - **TAITO:** practice a mental, work-life, or communication skill
+
+Capture is intentionally separate from Logos Brain. It stores raw thoughts with text, timestamp, and source (`text` or `voice`) so the user can preserve the thought before structuring it. The action **Sparraa tästä** can later send a captured thought into SPARRI.
 
 ## Response Style
 
