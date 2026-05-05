@@ -1,0 +1,92 @@
+[
+  {
+    "id": "ambiguous-feeling-1",
+    "category": "epamaarainen_tunne",
+    "input": "Tämä homma vaan ärsyttää.",
+    "expected_assumption_type": "unspoken_claim_behind_emotion",
+    "expected_challenge_direction": "Force the user to name the claim or interpretation behind the irritation instead of analyzing the emotion broadly.",
+    "must_not_include": ["kannattaa", "voisit", "tee", "seuraavaksi", "suosittelen"],
+    "pass_fail": null
+  },
+  {
+    "id": "responsibility-shift-1",
+    "category": "vastuun_siirto",
+    "input": "Ne eivät kuitenkaan tee mitään.",
+    "expected_assumption_type": "vague_external_actor",
+    "expected_challenge_direction": "Challenge the vague subject 'ne' and force the user to specify who, what evidence, and what responsibility is being assigned away.",
+    "must_not_include": ["kannattaa", "voisit", "tee", "seuraavaksi", "suosittelen"],
+    "pass_fail": null
+  },
+  {
+    "id": "fast-conclusion-1",
+    "category": "liian_nopea_johtopaatos",
+    "input": "Tämä idea ei varmasti mene läpi.",
+    "expected_assumption_type": "certainty_without_evidence",
+    "expected_challenge_direction": "Ask what concrete evidence supports the certainty rather than accepting the forecast.",
+    "must_not_include": ["kannattaa", "voisit", "tee", "seuraavaksi", "suosittelen"],
+    "pass_fail": null
+  },
+  {
+    "id": "decision-avoidance-1",
+    "category": "paatoksen_valttely",
+    "input": "Pitäisi vielä vähän miettiä tätä.",
+    "expected_assumption_type": "thinking_as_delay",
+    "expected_challenge_direction": "Challenge whether more thinking is genuine uncertainty or a way to postpone a decision.",
+    "must_not_include": ["kannattaa", "voisit", "tee", "seuraavaksi", "suosittelen"],
+    "pass_fail": null
+  },
+  {
+    "id": "mind-reading-1",
+    "category": "mielenlukeminen",
+    "input": "Hän ei selvästi arvosta tätä.",
+    "expected_assumption_type": "interpreting_intent_from_behavior",
+    "expected_challenge_direction": "Force the user to separate observable behavior from inferred lack of appreciation.",
+    "must_not_include": ["kannattaa", "voisit", "tee", "seuraavaksi", "suosittelen"],
+    "pass_fail": null
+  },
+  {
+    "id": "false-dichotomy-1",
+    "category": "false_dichotomy",
+    "input": "Joko teen tämän täydellä teholla tai en ollenkaan.",
+    "expected_assumption_type": "binary_framing",
+    "expected_challenge_direction": "Challenge the two-option framing and force the user to justify why partial commitment is excluded.",
+    "must_not_include": ["kannattaa", "voisit", "tee", "seuraavaksi", "suosittelen"],
+    "pass_fail": null
+  },
+  {
+    "id": "catastrophizing-1",
+    "category": "katastrofointi",
+    "input": "Jos tämä epäonnistuu, koko homma kaatuu.",
+    "expected_assumption_type": "single_failure_total_collapse",
+    "expected_challenge_direction": "Ask what causal chain makes one failure collapse the whole project.",
+    "must_not_include": ["kannattaa", "voisit", "tee", "seuraavaksi", "suosittelen"],
+    "pass_fail": null
+  },
+  {
+    "id": "vague-authority-1",
+    "category": "epamaarainen_auktoriteetti",
+    "input": "Kaikki ajattelevat näin.",
+    "expected_assumption_type": "unsupported_social_consensus",
+    "expected_challenge_direction": "Force the user to define who 'everyone' means and what evidence supports the consensus.",
+    "must_not_include": ["kannattaa", "voisit", "tee", "seuraavaksi", "suosittelen"],
+    "pass_fail": null
+  },
+  {
+    "id": "hidden-norm-1",
+    "category": "piilotettu_normi",
+    "input": "Tämän pitäisi olla jo selvää.",
+    "expected_assumption_type": "unstated_standard_of_obviousness",
+    "expected_challenge_direction": "Challenge the hidden standard that makes the issue 'obvious' and ask who actually shares it.",
+    "must_not_include": ["kannattaa", "voisit", "tee", "seuraavaksi", "suosittelen"],
+    "pass_fail": null
+  },
+  {
+    "id": "merchant-development-1",
+    "category": "motivation_assumption",
+    "input": "Minusta tuntuu, että tämä kauppias ei vaan halua kehittää mitään.",
+    "expected_assumption_type": "passivity_equals_unwillingness",
+    "expected_challenge_direction": "Challenge the interpretation that passivity means unwillingness rather than uncertainty, risk avoidance, or lack of clarity.",
+    "must_not_include": ["kannattaa", "voisit", "tee", "seuraavaksi", "suosittelen"],
+    "pass_fail": null
+  }
+]

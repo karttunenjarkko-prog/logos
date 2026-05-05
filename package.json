@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "validate:sparri": "node scripts/validate-sparri-output.mjs",
+    "validate:sparri:golden": "node scripts/validate-sparri-output.mjs --golden-only"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.4",
