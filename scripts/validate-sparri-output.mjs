@@ -1,12 +1,18 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  BANNED_ADVICE,
+  BANNED_OPENERS,
+  SPARRI_OUTPUT_KEYS,
+  YES_NO_QUESTION_OPENERS,
+} from '../src/services/doctrine.js';
 
 const root = process.cwd();
 const goldenPath = path.join(root, 'tests/sparri/golden-set.json');
-const bannedOpeners = ['hyvä', 'hieno', 'mielenkiintoinen', 'ymmärrän', 'totta', 'loistava'];
-const bannedAdvice = ['kannattaa', 'voisit', 'tee', 'seuraavaksi', 'suosittelen'];
-const yesNoQuestionOpeners = ['onko', 'voiko', 'pitäisikö', 'oletko', 'haluatko', 'kannattaako', 'olisiko'];
-const allowedOutputKeys = ['detected_assumption', 'why_it_matters', 'challenge_question'];
+const bannedOpeners = BANNED_OPENERS;
+const bannedAdvice = BANNED_ADVICE;
+const yesNoQuestionOpeners = YES_NO_QUESTION_OPENERS;
+const allowedOutputKeys = SPARRI_OUTPUT_KEYS;
 const scoreKeys = ['assumption', 'single_question', 'no_sycophancy_or_advice', 'cognitive_force'];
 
 main();

@@ -1,3 +1,5 @@
+import { BANNED_OPENERS, LOGOS_MODES } from './doctrine.js';
+
 const OPENAI_API_URL = 'https://api.openai.com/v1/responses';
 const OPENAI_MODEL = import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini';
 
@@ -91,7 +93,7 @@ const INTAKE_SCHEMA = {
   properties: {
     mode: {
       type: 'string',
-      enum: ['idea', 'sparri', 'analyysi', 'taito'],
+      enum: LOGOS_MODES,
       description: 'Best Logos mode for the input.',
     },
     title: {
@@ -370,7 +372,7 @@ function buildSparriSystemPrompt() {
     'Vastaa aina suomeksi ja vain pyydetyssä rakenteessa.',
     'Älä sisällytä yhteenvetoa, pääkohtia, neuvoja tai seuraavaa tekoa.',
     'Älä aloita kehulla, myötäilyllä tai ymmärtämisellä.',
-    'Älä käytä sanoja: hyvä, hieno, mielenkiintoinen, ymmärrän, totta, loistava.',
+    `Älä käytä sanoja: ${BANNED_OPENERS.join(', ')}.`,
     'Nimeä täsmälleen yksi käyttäjän oletus tai looginen hyppy.',
     'Selitä yhdessä lauseessa, miksi juuri tällä oletuksella on väliä.',
     'Kysy täsmälleen yksi kysymys.',
@@ -448,7 +450,7 @@ function normalizeChatOutput(output) {
 
 function normalizeIntake(output) {
   return {
-    mode: ['idea', 'sparri', 'analyysi', 'taito'].includes(output.mode) ? output.mode : 'idea',
+    mode: LOGOS_MODES.includes(output.mode) ? output.mode : 'idea',
     title: output.title?.trim() || 'Nimeton ajatus',
     tags: Array.isArray(output.tags)
       ? output.tags
@@ -459,10 +461,13 @@ function normalizeIntake(output) {
   };
 }
 
+const BANNED_OPENER_PATTERN = new RegExp(
+  `^(${BANNED_OPENERS.join('|')})[\\s,!:.–-]*`,
+  'i',
+);
+
 function stripBannedOpeners(value) {
-  return value
-    .replace(/^(hyvä|hieno|mielenkiintoinen|ymmärrän|totta|loistava)[\s,!:.–-]*/i, '')
-    .trim();
+  return value.replace(BANNED_OPENER_PATTERN, '').trim();
 }
 
 async function readOpenAIError(response) {

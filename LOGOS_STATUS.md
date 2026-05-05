@@ -1,29 +1,72 @@
-# 🧠 LOGOS - Project Master Status
+# LOGOS — Project Master Status
 
-## 📜 Vision & Philosophy
-Logos is a "Thinking Operating System", not a chatbot[cite: 2]. Its purpose is to develop the user's thinking quality through Socratic questioning and assumption-challenging[cite: 2].
-- **Anti-Goal:** Do not provide ready-made answers, summaries, or "next actions" that rob the user of the thinking process[cite: 2].
-- **Core Principle:** "One growth area at a time"[cite: 1].
+## Vision & Philosophy
 
-## 🎯 Current Milestone: Phase L2 - The Challenge Engine
-The immediate goal is to transform the SPARRI mode from a "polite analyzer" into a cognitively demanding "resistance engine"[cite: 2].
+The full doctrine lives in [DOCTRINE.md](./DOCTRINE.md). In short:
 
-## ✅ Recent Changes & Audit Results
-- **Migration:** Project moved to GitHub for streamlined development.
-- **Audit (logos_audit.md):** Identified that current schemas force Logos into a "consultant report" style[cite: 2].
-- **Strategy Shift:** Decided to avoid over-engineering `storage.v2` for now. Focus is 100% on the response logic[cite: 2].
-- **Agent Governance:** Added `AGENTS.md` and `CLAUDE.md` so AI agents know to read this file first, preserve the Logos philosophy, verify changes, and push successful updates to GitHub.
-- **SPARRI v1:** Implemented a SPARRI-specific Challenge Engine with strict assumption/challenge output and separate rendering.
-- **Manifesto & Audit Harness:** Added `README.md`, a SPARRI golden set, and a lightweight validation script for SPARRI output structure and anti-advice rules.
+- Logos is a Thinking Operating System, not a chatbot.
+- Its purpose is to develop the user's thinking quality through Socratic
+  questioning and assumption-challenging.
+- **Anti-goal:** do not provide ready-made answers, summaries, or
+  next-actions that rob the user of the thinking process.
+- **Core principle:** one growth area at a time.
 
-## 🛠 In Progress (The "Next Move")
-- [x] **Implement SPARRI_CHALLENGE_SCHEMA:** Refactor `logosEngine.js` to use a strict schema that forces the detection of one assumption and one sharp question[cite: 2].
-- [x] **Sycophancy Filter:** Update system prompts to forbid agreeable openers like "Great idea" or "I understand"[cite: 2].
-- [x] **SPARRI Golden Set:** Add at least 10 representative SPARRI inputs covering vague emotion, responsibility shifting, fast conclusions, decision avoidance, mind-reading, false dichotomy, catastrophizing, vague authority, hidden norms, and motivation assumptions.
-- [x] **Lightweight Validation Script:** Add offline checks for schema shape, banned sycophancy, banned advice phrases, one question mark, and optional 0-8 manual scoring.
-- [ ] **SPARRI Quality Audit:** Test the golden set with real OpenAI outputs and tune the prompt until at least 8/10 responses score 7/8 or higher.
+## Current Milestone: Phase L2 — The Challenge Engine
 
-## 📝 Developer Notes for AI
-1. **Response Logic:** When in SPARRI mode, Logos must not summarize. It must only identify an assumption and ask one question[cite: 2].
-2. **Context Injection:** Future iterations will feed `cognitive_signals` (e.g., false dichotomies) from memory back into the engine[cite: 2].
-3. **Lean Build:** Keep UI changes minimal; the value is in the `logosEngine.js` output quality.
+The immediate goal is to keep SPARRI as a cognitively demanding resistance
+engine and to bring the rest of the modes in line with the doctrine.
+
+## Recent Changes & Audit Results
+
+- **Migration:** project moved to GitHub for streamlined development.
+- **Audit (`logos_audit.md`):** identified that current schemas force Logos
+  into a "consultant report" style.
+- **Strategy shift:** decided to avoid over-engineering `storage.v2` for
+  now. Focus is 100% on response logic.
+- **Agent governance:** added `AGENTS.md` and `CLAUDE.md` so AI agents read
+  the doctrine first, preserve the philosophy, verify changes, and push
+  successful updates to GitHub.
+- **SPARRI v1:** implemented a SPARRI-specific Challenge Engine with strict
+  assumption/challenge output and separate rendering.
+- **Manifesto & audit harness:** added `README.md`, a SPARRI golden set,
+  and a lightweight validation script for SPARRI output structure and
+  anti-advice rules.
+- **Doctrine consolidation:** added `DOCTRINE.md` as single source of
+  truth and `src/services/doctrine.js` as a single source for hard
+  invariants (banned openers, banned advice, yes/no openers, mode enum,
+  SPARRI output keys). Engine and validator now import from one place.
+
+## In Progress (The Next Move)
+
+- [x] Implement `SPARRI_CHALLENGE_SCHEMA`: refactor `logosEngine.js` to use
+  a strict schema that forces detection of one assumption and one sharp
+  question.
+- [x] Sycophancy filter: update system prompts to forbid agreeable openers.
+- [x] SPARRI golden set: at least 10 representative SPARRI inputs covering
+  vague emotion, responsibility shifting, fast conclusions, decision
+  avoidance, mind-reading, false dichotomy, catastrophizing, vague
+  authority, hidden norms, and motivation assumptions.
+- [x] Lightweight validation script: offline checks for schema shape,
+  banned sycophancy, banned advice phrases, one question mark, optional
+  0–8 manual scoring.
+- [x] Doctrine consolidation: `DOCTRINE.md` + `src/services/doctrine.js`
+  as single sources of truth for philosophy and hard invariants.
+- [ ] **SPARRI Quality Audit:** test the golden set with real OpenAI
+  outputs and tune the prompt until at least 8/10 responses score 7/8 or
+  higher. Tooling gap: a runner script that feeds the golden set through
+  the engine and writes `tests/sparri/results.json` is still missing.
+- [ ] **Mode migration:** rename fourth mode `taito` → `kehitys` per
+  DOCTRINE §6. Schema change — requires explicit approval before edits.
+
+## Developer Notes for AI
+
+1. **Doctrine first.** Read `DOCTRINE.md` before changing prompts, schemas,
+   or copy.
+2. **Single source of invariants.** Banned word lists and the mode enum
+   live in `src/services/doctrine.js`. Import from there; do not duplicate.
+3. **Response logic.** When in SPARRI mode, Logos must not summarize. It
+   must only identify an assumption and ask one question.
+4. **Context injection.** Future iterations will feed `cognitive_signals`
+   (e.g., false dichotomies) from memory back into the engine.
+5. **Lean build.** Keep UI changes minimal; the value is in the
+   `logosEngine.js` output quality.
