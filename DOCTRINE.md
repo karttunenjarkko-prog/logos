@@ -85,11 +85,6 @@ modes, not UI choices.
 - **ANALYYSI** — situation → unpack and understand
 - **KEHITYS** — recurring theme → develop the way of thinking
 
-> Implementation note: the current code still uses `taito` as the fourth
-> mode enum value. The migration to `kehitys` is a tracked schema change in
-> `LOGOS_STATUS.md` and requires updating `INTAKE_SCHEMA`, `MODE_INSTRUCTIONS`,
-> persistence, and renderers in one change.
-
 ## 7. SPARRI — the core of Logos
 
 SPARRI is the most important Logos function. Its job is not to help, but to

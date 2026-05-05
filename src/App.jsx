@@ -51,10 +51,10 @@ export default function App() {
   function startSkillSession(skill) {
     setForm({
       ...EMPTY_SESSION,
-      mode: 'taito',
+      mode: 'kehitys',
       title: skill.name,
       body: `${skill.summary}\n\nHarjoituskysymys: ${skill.prompts[0]}`,
-      tags: 'taito',
+      tags: 'kehitys',
       selectedSkill: skill,
     });
     setEngineError('');

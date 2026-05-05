@@ -59,8 +59,10 @@ engine and to bring the rest of the modes in line with the doctrine.
   `npm run validate:sparri -- tests/sparri/results.json`, then score the
   outputs manually until at least 8/10 score 7/8 or higher. Tune the
   SPARRI prompt in `src/services/sparri.js` until the target is met.
-- [ ] **Mode migration:** rename fourth mode `taito` → `kehitys` per
-  DOCTRINE §6. Schema change — requires explicit approval before edits.
+- [x] Mode migration: fourth mode renamed `taito` → `kehitys` across
+  doctrine, engine, intake prompt, constants, and skill-session entry
+  point per DOCTRINE §6. SkillLibrary stays as optional context and now
+  routes new skill sessions to KEHITYS mode by default.
 
 ## Developer Notes for AI
 

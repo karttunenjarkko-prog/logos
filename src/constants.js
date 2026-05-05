@@ -18,10 +18,10 @@ export const MODES = [
     description: 'Pura kokemus, päätös tai tapahtuma ymmärrettäviin osiin.',
   },
   {
-    id: 'taito',
-    label: 'TAITO',
-    title: 'Taito',
-    description: 'Harjoittele ajattelu-, työ- tai vuorovaikutustaitoa tietoisesti.',
+    id: 'kehitys',
+    label: 'KEHITYS',
+    title: 'Kehitys',
+    description: 'Tunnista toistuva teema ajattelussasi ja kehitä tapaa, jolla lähestyt sitä.',
   },
 ];
 

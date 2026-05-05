@@ -2,7 +2,7 @@
 // Imported by both the engine (browser) and validation scripts (Node).
 // When you change a value here, also update DOCTRINE.md.
 
-export const LOGOS_MODES = ['idea', 'sparri', 'analyysi', 'taito'];
+export const LOGOS_MODES = ['idea', 'sparri', 'analyysi', 'kehitys'];
 
 export const BANNED_OPENERS = [
   'hyvä',

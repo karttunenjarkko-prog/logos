@@ -13,7 +13,7 @@ const MODE_INSTRUCTIONS = {
   idea: 'Kirkasta idea: mikä siinä on kiinnostavaa, mikä on epäselvää ja miten sitä kannattaa kokeilla pienesti.',
   sparri: 'Tunnista yksi oletus tai looginen hyppy ja pakota käyttäjä perustelemaan se yhdellä terävällä kysymyksellä.',
   analyysi: 'Analysoi kokemus: erota havainnot, tulkinnat, opit ja toistuvat kaavat.',
-  taito: 'Valmenna taitoa: yhdistä käyttäjän tilanne valittuun taitoon ja ehdota yhtä käytännöllistä harjoitusta.',
+  kehitys: 'Tunnista käyttäjän ajattelussa toistuva teema tai kaava ja auta kehittämään ajattelutapaa sen ympärillä, ei yksittäistä temppua.',
 };
 
 const CHALLENGE_TONES = {
@@ -111,8 +111,8 @@ export async function prepareLogosSession(rawInput, context = {}) {
         content: [
           'Olet Logos Brainin sisäänotto.',
           'Tee sotkuisesta käyttäjän ajatuksesta kevyt metatieto jatkokäsittelyä varten.',
-          'Valitse todennäköisin mode: idea, sparri, analyysi tai taito.',
-          'Älä ylitulkitse. Jos kyse on uudesta ajatuksesta, valitse idea. Jos päätöksestä tai tilanteesta, valitse sparri. Jos kokemuksen purusta, valitse analyysi. Jos harjoittelusta tai kehittymisestä, valitse taito.',
+          'Valitse todennäköisin mode: idea, sparri, analyysi tai kehitys.',
+          'Älä ylitulkitse. Jos kyse on uudesta ajatuksesta, valitse idea. Jos päätöksestä tai tilanteesta, valitse sparri. Jos kokemuksen purusta, valitse analyysi. Jos toistuvasta teemasta tai ajattelutavan kehittämisestä, valitse kehitys.',
           'Luo lyhyt, luonnollinen suomenkielinen otsikko ja enintään kolme tagia.',
         ].join(' '),
       },
