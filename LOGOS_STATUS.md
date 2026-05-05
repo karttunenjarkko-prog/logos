@@ -51,10 +51,14 @@ engine and to bring the rest of the modes in line with the doctrine.
   0–8 manual scoring.
 - [x] Doctrine consolidation: `DOCTRINE.md` + `src/services/doctrine.js`
   as single sources of truth for philosophy and hard invariants.
-- [ ] **SPARRI Quality Audit:** test the golden set with real OpenAI
-  outputs and tune the prompt until at least 8/10 responses score 7/8 or
-  higher. Tooling gap: a runner script that feeds the golden set through
-  the engine and writes `tests/sparri/results.json` is still missing.
+- [x] SPARRI runner script: `scripts/run-sparri-golden.mjs` feeds the
+  golden set through OpenAI and writes `tests/sparri/results.json`. SPARRI
+  prompt + schema + normalization extracted to `src/services/sparri.js`
+  so the engine and the runner share one definition.
+- [ ] **SPARRI Quality Audit:** run `npm run sparri:run`, then
+  `npm run validate:sparri -- tests/sparri/results.json`, then score the
+  outputs manually until at least 8/10 score 7/8 or higher. Tune the
+  SPARRI prompt in `src/services/sparri.js` until the target is met.
 - [ ] **Mode migration:** rename fourth mode `taito` → `kehitys` per
   DOCTRINE §6. Schema change — requires explicit approval before edits.
 

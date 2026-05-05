@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "validate:sparri": "node scripts/validate-sparri-output.mjs",
-    "validate:sparri:golden": "node scripts/validate-sparri-output.mjs --golden-only"
+    "validate:sparri:golden": "node scripts/validate-sparri-output.mjs --golden-only",
+    "sparri:run": "node scripts/run-sparri-golden.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.4",

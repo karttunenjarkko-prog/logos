@@ -41,6 +41,12 @@ Validate the SPARRI golden set shape:
 npm run validate:sparri:golden
 ```
 
+Run the SPARRI golden set against OpenAI and write `tests/sparri/results.json`:
+
+```bash
+OPENAI_API_KEY=sk-... npm run sparri:run
+```
+
 Validate collected SPARRI outputs:
 
 ```bash

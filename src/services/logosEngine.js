@@ -1,4 +1,10 @@
-import { BANNED_OPENERS, LOGOS_MODES } from './doctrine.js';
+import { LOGOS_MODES } from './doctrine.js';
+import {
+  SPARRI_SCHEMA,
+  buildSparriSystemPrompt,
+  extractOutputText,
+  normalizeSparriOutput,
+} from './sparri.js';
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/responses';
 const OPENAI_MODEL = import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini';
@@ -38,26 +44,6 @@ const LOGOS_SCHEMA = {
     },
   },
   required: ['summary', 'key_points', 'challenge_question', 'next_action'],
-  additionalProperties: false,
-};
-
-const SPARRI_SCHEMA = {
-  type: 'object',
-  properties: {
-    detected_assumption: {
-      type: 'string',
-      description: 'Exactly one concrete assumption or logical jump from the user input, in Finnish.',
-    },
-    why_it_matters: {
-      type: 'string',
-      description: 'One Finnish sentence explaining why this assumption changes the interpretation or response.',
-    },
-    challenge_question: {
-      type: 'string',
-      description: 'Exactly one sharp Finnish question that is not a yes/no question.',
-    },
-  },
-  required: ['detected_assumption', 'why_it_matters', 'challenge_question'],
   additionalProperties: false,
 };
 
@@ -365,23 +351,6 @@ function buildChatSystemPrompt(context) {
   ].join(' ');
 }
 
-function buildSparriSystemPrompt() {
-  return [
-    'Olet Logos SPARRI, terävä ajattelun haastaja.',
-    'Et ole yleinen avustaja, neuvoja tai yhteenvetäjä.',
-    'Vastaa aina suomeksi ja vain pyydetyssä rakenteessa.',
-    'Älä sisällytä yhteenvetoa, pääkohtia, neuvoja tai seuraavaa tekoa.',
-    'Älä aloita kehulla, myötäilyllä tai ymmärtämisellä.',
-    `Älä käytä sanoja: ${BANNED_OPENERS.join(', ')}.`,
-    'Nimeä täsmälleen yksi käyttäjän oletus tai looginen hyppy.',
-    'Selitä yhdessä lauseessa, miksi juuri tällä oletuksella on väliä.',
-    'Kysy täsmälleen yksi kysymys.',
-    'Kysymys ei saa olla kyllä/ei-kysymys eikä alkaa muodolla onko, voiko, pitäisikö, oletko, haluatko, kannattaako tai olisiko.',
-    'Kysymyksen pitää pakottaa käyttäjä perustelemaan, tarkentamaan tai kehystämään oletus uudelleen.',
-    'Pidä koko vastaus lyhyenä ja hieman epämukavana mutta hyödyllisenä.',
-  ].join(' ');
-}
-
 function buildUserPayload(mode, input, context) {
   return {
     mode,
@@ -403,35 +372,12 @@ function buildUserPayload(mode, input, context) {
   };
 }
 
-function extractOutputText(data) {
-  if (data.output_text) return data.output_text;
-
-  const outputText = data.output
-    ?.flatMap((item) => item.content ?? [])
-    .find((content) => content.type === 'output_text')?.text;
-
-  if (!outputText) {
-    throw new Error('OpenAI ei palauttanut luettavaa Logos-vastausta.');
-  }
-
-  return outputText;
-}
-
 function normalizeLogosOutput(output) {
   return {
     summary: output.summary ?? '',
     key_points: Array.isArray(output.key_points) ? output.key_points.slice(0, 4) : [],
     challenge_question: output.challenge_question ?? '',
     next_action: output.next_action ?? '',
-  };
-}
-
-function normalizeSparriOutput(output) {
-  return {
-    type: 'sparri_challenge',
-    detected_assumption: stripBannedOpeners(output.detected_assumption ?? ''),
-    why_it_matters: stripBannedOpeners(output.why_it_matters ?? ''),
-    challenge_question: stripBannedOpeners(output.challenge_question ?? ''),
   };
 }
 
@@ -459,15 +405,6 @@ function normalizeIntake(output) {
           .slice(0, 3)
       : [],
   };
-}
-
-const BANNED_OPENER_PATTERN = new RegExp(
-  `^(${BANNED_OPENERS.join('|')})[\\s,!:.–-]*`,
-  'i',
-);
-
-function stripBannedOpeners(value) {
-  return value.replace(BANNED_OPENER_PATTERN, '').trim();
 }
 
 async function readOpenAIError(response) {
