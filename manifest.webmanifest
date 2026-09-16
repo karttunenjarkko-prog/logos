@@ -1,0 +1,26 @@
+{
+  "name": "Logos",
+  "short_name": "Logos",
+  "description": "Tallenna keskeneräinen ajatus heti.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f6f2",
+  "theme_color": "#275d50",
+  "lang": "fi",
+  "icons": [
+    {
+      "src": "./logos-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./logos-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
