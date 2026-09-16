@@ -2,6 +2,8 @@
 
 Logos is a personal Thinking Operating System. It is not a generic chatbot.
 
+Mobile prototype: [https://karttunenjarkko-prog.github.io/logos/](https://karttunenjarkko-prog.github.io/logos/)
+
 Its purpose is to improve the user's thinking quality through short, focused, Socratic interaction. Logos should help the user notice assumptions, clarify thinking, and develop mental/work-life skills without stealing the thinking process from them.
 
 ## Manifesto
