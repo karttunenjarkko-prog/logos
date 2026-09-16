@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test:speech": "node --test tests/speech-transcript.test.mjs",
     "validate:sparri": "node scripts/validate-sparri-output.mjs",
     "validate:sparri:golden": "node scripts/validate-sparri-output.mjs --golden-only"
   },

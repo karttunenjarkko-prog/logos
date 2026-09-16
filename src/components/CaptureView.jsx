@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
+import {
+  commitFinalResults,
+  composeRecognitionTranscript,
+  normalizeSpeech,
+  updateRecognitionResults,
+} from '../services/speechTranscript.js';
 
 const STOP_COMMAND = /(?:^|\s)(?:tallenna|lopeta|siin[aä] kaikki)[.!?]?\s*$/i;
-
-function normalizeSpeech(value) {
-  return value.replace(/\s+/g, ' ').trim();
-}
+const STOP_FALLBACK_MS = 1500;
 
 export default function CaptureView({ thoughts, onSaveThought, onSparThought }) {
   const [text, setText] = useState('');
@@ -13,19 +16,28 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
   const [isListening, setIsListening] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
   const recognitionRef = useRef(null);
-  const finalTranscriptRef = useRef('');
+  const committedTranscriptRef = useRef('');
+  const recognitionResultsRef = useRef([]);
   const currentTranscriptRef = useRef('');
   const keepListeningRef = useRef(false);
+  const pendingSaveRef = useRef(false);
   const voiceSavedRef = useRef(false);
   const restartTimerRef = useRef(null);
+  const stopFallbackTimerRef = useRef(null);
+  const captureGenerationRef = useRef(0);
   const speechSupported =
     typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
 
   useEffect(
     () => () => {
+      captureGenerationRef.current += 1;
       keepListeningRef.current = false;
+      pendingSaveRef.current = false;
       window.clearTimeout(restartTimerRef.current);
-      recognitionRef.current?.abort();
+      window.clearTimeout(stopFallbackTimerRef.current);
+      const activeRecognition = recognitionRef.current;
+      recognitionRef.current = null;
+      activeRecognition?.abort();
     },
     [],
   );
@@ -47,6 +59,9 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
 
     voiceSavedRef.current = true;
     keepListeningRef.current = false;
+    pendingSaveRef.current = false;
+    window.clearTimeout(restartTimerRef.current);
+    window.clearTimeout(stopFallbackTimerRef.current);
     const cleanTranscript = normalizeSpeech(rawTranscript).replace(STOP_COMMAND, '').trim();
 
     if (cleanTranscript) {
@@ -57,10 +72,56 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
     }
 
     setIsListening(false);
-    recognitionRef.current?.stop();
+    const activeRecognition = recognitionRef.current;
+    recognitionRef.current = null;
+    activeRecognition?.abort();
   }
 
-  function createRecognition() {
+  function refreshVisibleTranscript() {
+    const transcript = composeRecognitionTranscript(
+      committedTranscriptRef.current,
+      recognitionResultsRef.current,
+    );
+    currentTranscriptRef.current = transcript.combinedTranscript;
+    setLiveTranscript(transcript.combinedTranscript);
+    return transcript;
+  }
+
+  function commitRecognitionSession() {
+    committedTranscriptRef.current = commitFinalResults(
+      committedTranscriptRef.current,
+      recognitionResultsRef.current,
+    );
+    recognitionResultsRef.current = [];
+    currentTranscriptRef.current = committedTranscriptRef.current;
+    setLiveTranscript(committedTranscriptRef.current);
+  }
+
+  function requestStopAndSave() {
+    if (voiceSavedRef.current || pendingSaveRef.current) return;
+
+    keepListeningRef.current = false;
+    pendingSaveRef.current = true;
+    window.clearTimeout(restartTimerRef.current);
+    setStatus('Viimeistelen tallennusta...');
+
+    const activeRecognition = recognitionRef.current;
+    if (!activeRecognition) {
+      saveVoiceThought(currentTranscriptRef.current);
+      return;
+    }
+
+    try {
+      stopFallbackTimerRef.current = window.setTimeout(() => {
+        saveVoiceThought(currentTranscriptRef.current);
+      }, STOP_FALLBACK_MS);
+      activeRecognition.stop();
+    } catch {
+      saveVoiceThought(currentTranscriptRef.current);
+    }
+  }
+
+  function createRecognition(generation) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.lang = 'fi-FI';
@@ -68,37 +129,29 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
     recognition.continuous = true;
 
     recognition.onstart = () => {
+      if (captureGenerationRef.current !== generation || recognitionRef.current !== recognition) return;
       setError('');
       setStatus('Kuuntelen...');
       setIsListening(true);
     };
 
     recognition.onresult = (event) => {
-      let finalTranscript = finalTranscriptRef.current;
-      let interimTranscript = '';
+      if (captureGenerationRef.current !== generation || recognitionRef.current !== recognition) return;
 
-      for (let index = event.resultIndex; index < event.results.length; index += 1) {
-        const transcript = event.results[index][0]?.transcript ?? '';
-        if (event.results[index].isFinal) {
-          finalTranscript = normalizeSpeech(`${finalTranscript} ${transcript}`);
-        } else {
-          interimTranscript += ` ${transcript}`;
-        }
-      }
+      recognitionResultsRef.current = updateRecognitionResults(recognitionResultsRef.current, event);
+      const transcript = refreshVisibleTranscript();
 
-      finalTranscriptRef.current = finalTranscript;
-      const combinedTranscript = normalizeSpeech(`${finalTranscript} ${interimTranscript}`);
-      currentTranscriptRef.current = combinedTranscript;
-      setLiveTranscript(combinedTranscript);
-
-      if (STOP_COMMAND.test(combinedTranscript)) {
-        saveVoiceThought(combinedTranscript);
+      if (STOP_COMMAND.test(transcript.combinedTranscript)) {
+        requestStopAndSave();
       }
     };
 
     recognition.onerror = (event) => {
+      if (captureGenerationRef.current !== generation || recognitionRef.current !== recognition) return;
+
       if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
         keepListeningRef.current = false;
+        pendingSaveRef.current = false;
         setIsListening(false);
         setError('Salli mikrofonin käyttö selaimen asetuksista.');
         return;
@@ -110,10 +163,21 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
     };
 
     recognition.onend = () => {
+      if (captureGenerationRef.current !== generation || recognitionRef.current !== recognition) return;
+
       recognitionRef.current = null;
+      window.clearTimeout(stopFallbackTimerRef.current);
+
+      const transcript = refreshVisibleTranscript();
+      if (pendingSaveRef.current) {
+        saveVoiceThought(transcript.combinedTranscript);
+        return;
+      }
+
+      commitRecognitionSession();
 
       if (keepListeningRef.current && !voiceSavedRef.current) {
-        restartTimerRef.current = window.setTimeout(startRecognition, 250);
+        restartTimerRef.current = window.setTimeout(() => startRecognition(generation), 250);
       } else {
         setIsListening(false);
       }
@@ -122,11 +186,18 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
     return recognition;
   }
 
-  function startRecognition() {
-    if (!keepListeningRef.current || recognitionRef.current) return;
+  function startRecognition(generation) {
+    if (
+      captureGenerationRef.current !== generation ||
+      !keepListeningRef.current ||
+      recognitionRef.current
+    ) {
+      return;
+    }
 
     try {
-      const recognition = createRecognition();
+      recognitionResultsRef.current = [];
+      const recognition = createRecognition(generation);
       recognitionRef.current = recognition;
       recognition.start();
     } catch {
@@ -142,19 +213,28 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
       return;
     }
 
+    captureGenerationRef.current += 1;
+    const generation = captureGenerationRef.current;
     window.clearTimeout(restartTimerRef.current);
-    finalTranscriptRef.current = '';
+    window.clearTimeout(stopFallbackTimerRef.current);
+    const staleRecognition = recognitionRef.current;
+    recognitionRef.current = null;
+    staleRecognition?.abort();
+    committedTranscriptRef.current = '';
+    recognitionResultsRef.current = [];
     currentTranscriptRef.current = '';
     keepListeningRef.current = true;
+    pendingSaveRef.current = false;
     voiceSavedRef.current = false;
     setLiveTranscript('');
+    setIsListening(true);
     setStatus('');
     setError('');
-    startRecognition();
+    startRecognition(generation);
   }
 
   function stopVoiceCapture() {
-    saveVoiceThought(currentTranscriptRef.current);
+    requestStopAndSave();
   }
 
   return (
