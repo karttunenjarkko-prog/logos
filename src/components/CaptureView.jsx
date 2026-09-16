@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  commitFinalResults,
+  commitSessionResults,
   composeRecognitionTranscript,
-  normalizeSpeech,
+  hasStopCommand,
+  removeStopCommand,
   updateRecognitionResults,
 } from '../services/speechTranscript.js';
 
-const STOP_COMMAND = /(?:^|\s)(?:tallenna|lopeta|siin[aä] kaikki)[.!?]?\s*$/i;
 const STOP_FALLBACK_MS = 1500;
 
 export default function CaptureView({ thoughts, onSaveThought, onSparThought }) {
@@ -62,7 +62,7 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
     pendingSaveRef.current = false;
     window.clearTimeout(restartTimerRef.current);
     window.clearTimeout(stopFallbackTimerRef.current);
-    const cleanTranscript = normalizeSpeech(rawTranscript).replace(STOP_COMMAND, '').trim();
+    const cleanTranscript = removeStopCommand(rawTranscript);
 
     if (cleanTranscript) {
       onSaveThought(cleanTranscript, 'voice');
@@ -88,7 +88,7 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
   }
 
   function commitRecognitionSession() {
-    committedTranscriptRef.current = commitFinalResults(
+    committedTranscriptRef.current = commitSessionResults(
       committedTranscriptRef.current,
       recognitionResultsRef.current,
     );
@@ -126,7 +126,8 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
     const recognition = new SpeechRecognition();
     recognition.lang = 'fi-FI';
     recognition.interimResults = true;
-    recognition.continuous = true;
+    recognition.continuous = false;
+    recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
       if (captureGenerationRef.current !== generation || recognitionRef.current !== recognition) return;
@@ -140,8 +141,9 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
 
       recognitionResultsRef.current = updateRecognitionResults(recognitionResultsRef.current, event);
       const transcript = refreshVisibleTranscript();
+      logRecognitionEvent(event, recognitionResultsRef.current, transcript, generation);
 
-      if (STOP_COMMAND.test(transcript.combinedTranscript)) {
+      if (hasStopCommand(transcript.combinedTranscript)) {
         requestStopAndSave();
       }
     };
@@ -317,4 +319,22 @@ export default function CaptureView({ thoughts, onSaveThought, onSparThought }) 
       </section>
     </section>
   );
+}
+
+function logRecognitionEvent(event, recognitionResults, transcript, generation) {
+  const results = Array.from({ length: event.results.length }, (_, index) => ({
+    index,
+    transcript: event.results[index][0]?.transcript ?? '',
+    isFinal: Boolean(event.results[index].isFinal),
+  }));
+  const sessionTranscript = composeRecognitionTranscript('', recognitionResults).combinedTranscript;
+
+  console.log('[Logos voice] onresult', {
+    generation,
+    resultIndex: event.resultIndex,
+    resultsLength: event.results.length,
+    results,
+    sessionTranscript,
+    currentTranscript: transcript.combinedTranscript,
+  });
 }

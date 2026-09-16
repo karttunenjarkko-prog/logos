@@ -18,7 +18,7 @@ The immediate goal is to verify that Logos becomes useful when raw thoughts can 
 - **Capture v1:** Added raw thought capture with text/voice source metadata, localStorage persistence, newest-first list, and a "Sparraa tästä" handoff into SPARRI chat without AI processing during capture.
 - **Capture MVP:** Made Capture the default entry view and extended voice capture into a hands-free flow with a live transcript, automatic listening continuation, and Finnish stop commands ("tallenna", "lopeta", "siinä kaikki").
 - **Mobile HTTPS Release:** Published the installable Capture MVP at `https://karttunenjarkko-prog.github.io/logos/` for Android testing. The GitHub repository is temporarily public because the current GitHub plan does not support Pages for private repositories.
-- **Voice Transcript Fix:** Replaced append-based Web Speech result handling with index-based final/interim tracking so Android Chrome cannot duplicate previously returned recognition results across updates or automatic restarts.
+- **Voice Transcript Fix v2:** A physical Zenfone 10 test showed Android Chrome can expose growing hypotheses as multiple final result slots. Capture now uses non-continuous one-utterance recognition sessions, index-based slot replacement, one commit per `onend`, command cleanup, and temporary event-level debug logging.
 
 ## 🛠 In Progress (The "Next Move")
 - [x] **Implement SPARRI_CHALLENGE_SCHEMA:** Refactor `logosEngine.js` to use a strict schema that forces the detection of one assumption and one sharp question[cite: 2].

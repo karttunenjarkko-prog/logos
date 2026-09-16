@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
-  commitFinalResults,
+  commitSessionResults,
   composeRecognitionTranscript,
+  hasStopCommand,
+  removeStopCommand,
   updateRecognitionResults,
 } from '../src/services/speechTranscript.js';
 
@@ -19,28 +21,37 @@ test('progressive interim hypotheses replace the same result index', () => {
   state = updateRecognitionResults(state, event(0, [result('podcastissa')]));
   assert.equal(composeRecognitionTranscript('', state).combinedTranscript, 'podcastissa');
 
+  state = updateRecognitionResults(state, event(0, [result('podcastissa oli')]));
+  assert.equal(composeRecognitionTranscript('', state).combinedTranscript, 'podcastissa oli');
+
   state = updateRecognitionResults(state, event(0, [result('podcastissa oli todella')]));
   assert.equal(composeRecognitionTranscript('', state).combinedTranscript, 'podcastissa oli todella');
 
   state = updateRecognitionResults(
     state,
-    event(0, [result('podcastissa oli todella hyvä kohta mitä haluan miettiä tarkemmin.', true)]),
+    event(0, [result('podcastissa oli todella hyvä kohta', true)]),
   );
-  assert.equal(
-    composeRecognitionTranscript('', state).finalTranscript,
-    'podcastissa oli todella hyvä kohta mitä haluan miettiä tarkemmin.',
-  );
+  assert.equal(composeRecognitionTranscript('', state).finalTranscript, 'podcastissa oli todella hyvä kohta');
 });
 
-test('short pauses do not append previously returned final results again', () => {
-  let state = updateRecognitionResults([], event(0, [result('Tämä', true)]));
-  state = updateRecognitionResults(state, event(1, [result('Tämä', true), result('on ajatus')]));
-  state = updateRecognitionResults(
-    state,
-    event(0, [result('Tämä', true), result('on ajatus jota haluan kehittää.', true)]),
+test('a later interim result index replaces its earlier hypothesis', () => {
+  let state = updateRecognitionResults(
+    [],
+    event(0, [result('podcastissa oli todella hyvä kohta', true), result('jota')]),
+  );
+  assert.equal(
+    composeRecognitionTranscript('', state).combinedTranscript,
+    'podcastissa oli todella hyvä kohta jota',
   );
 
-  assert.equal(composeRecognitionTranscript('', state).finalTranscript, 'Tämä on ajatus jota haluan kehittää.');
+  state = updateRecognitionResults(
+    state,
+    event(1, [result('podcastissa oli todella hyvä kohta', true), result('jota haluan miettiä')]),
+  );
+  assert.equal(
+    composeRecognitionTranscript('', state).combinedTranscript,
+    'podcastissa oli todella hyvä kohta jota haluan miettiä',
+  );
 });
 
 test('intentional repeated words are preserved', () => {
@@ -48,17 +59,35 @@ test('intentional repeated words are preserved', () => {
   assert.equal(composeRecognitionTranscript('', state).finalTranscript, 'Tämä oli todella todella hyvä.');
 });
 
-test('long recognition sessions keep each indexed final result exactly once', () => {
-  let state = [];
+test('Android cumulative final slots resolve to the latest session hypothesis', () => {
+  let state = updateRecognitionResults([], event(0, [result('podcastissa', true)]));
+  state = updateRecognitionResults(
+    state,
+    event(1, [result('podcastissa', true), result('podcastissa oli', true)]),
+  );
+  state = updateRecognitionResults(
+    state,
+    event(2, [
+      result('podcastissa', true),
+      result('podcastissa oli', true),
+      result('podcastissa oli todella', true),
+    ]),
+  );
+
+  assert.equal(composeRecognitionTranscript('', state).combinedTranscript, 'podcastissa oli todella');
+});
+
+test('long capture commits each non-continuous recognition session once', () => {
+  let committed = '';
   const expectedParts = [];
 
   for (let index = 0; index < 120; index += 1) {
     expectedParts.push(`osuus-${index}`);
-    const fullSnapshot = expectedParts.map((part) => result(part, true));
-    state = updateRecognitionResults(state, event(0, fullSnapshot));
+    const session = updateRecognitionResults([], event(0, [result(`osuus-${index}`, true)]));
+    committed = commitSessionResults(committed, session);
   }
 
-  assert.equal(composeRecognitionTranscript('', state).finalTranscript, expectedParts.join(' '));
+  assert.equal(committed, expectedParts.join(' '));
 });
 
 test('a new capture starts without the previous capture transcript', () => {
@@ -71,7 +100,7 @@ test('a new capture starts without the previous capture transcript', () => {
 
 test('automatic restart commits prior finals once and resets result indexes', () => {
   const firstSession = updateRecognitionResults([], event(0, [result('Ensimmäinen osuus.', true)]));
-  const committed = commitFinalResults('', firstSession);
+  const committed = commitSessionResults('', firstSession);
 
   let restartedSession = updateRecognitionResults([], event(0, [result('Toinen')]));
   assert.equal(
@@ -84,4 +113,19 @@ test('automatic restart commits prior finals once and resets result indexes', ()
     composeRecognitionTranscript(committed, restartedSession).finalTranscript,
     'Ensimmäinen osuus. Toinen osuus.',
   );
+});
+
+test('voice command is detected once and removed from saved thought', () => {
+  const commandSession = updateRecognitionResults(
+    [],
+    event(0, [result('opeta', true), result('opeta ja', true), result('Lopeta ja', true)]),
+  );
+  const transcript = composeRecognitionTranscript(
+    'Podcastissa oli todella hyvä kohta.',
+    commandSession,
+  ).combinedTranscript;
+
+  assert.equal(transcript, 'Podcastissa oli todella hyvä kohta. Lopeta ja');
+  assert.equal(hasStopCommand(transcript), true);
+  assert.equal(removeStopCommand(transcript), 'Podcastissa oli todella hyvä kohta.');
 });
