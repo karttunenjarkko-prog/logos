@@ -530,7 +530,58 @@ h3 {
 }
 
 .capture-panel textarea {
-  min-height: 180px;
+  min-height: 120px;
+}
+
+.voice-capture {
+  display: grid;
+  justify-items: center;
+  gap: 0.85rem;
+  padding: clamp(1.25rem, 6vw, 2.5rem) 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.voice-capture-button {
+  width: min(100%, 320px);
+  min-height: 4.25rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.voice-capture.is-listening .voice-capture-button {
+  border-color: var(--rose);
+  background: var(--rose);
+}
+
+.voice-status {
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.live-transcript {
+  width: min(100%, 680px);
+  min-height: 5rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  padding: 1rem;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.text-capture {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.text-capture-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .thought-list {
@@ -789,11 +840,13 @@ fieldset {
   .topbar nav {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .topbar nav button {
-    padding: 0 0.45rem;
+    min-width: 0;
+    padding: 0 0.2rem;
+    font-size: 0.78rem;
   }
 
   main {
@@ -828,6 +881,16 @@ fieldset {
   .quick-replies button,
   .section-heading-row .dashboard-actions,
   .section-heading-row .dashboard-actions button {
+    width: 100%;
+  }
+
+  .capture-view .view-header {
+    padding-top: 0.25rem;
+  }
+
+  .voice-capture-button,
+  .text-capture-actions,
+  .text-capture-actions button {
     width: 100%;
   }
 }

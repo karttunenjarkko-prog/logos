@@ -28,7 +28,7 @@ const VIEWS = {
 };
 
 export default function App() {
-  const [view, setView] = useState(VIEWS.dashboard);
+  const [view, setView] = useState(VIEWS.capture);
   const [sessions, setSessions] = useState(() => loadSessions());
   const [thoughts, setThoughts] = useState(() => loadThoughts());
   const [settings, setSettings] = useState(() => loadSettings());
